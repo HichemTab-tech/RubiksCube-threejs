@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rubik's Cube</title>
+    <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./node_modules/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="buttons">
+    <button id="reset_camera" class="btn btn-primary">Reset Camera</button>
+    <button id="stop" class="btn btn-danger d-none">Stop</button>
+    <button id="start" class="btn btn-success">Start</button>
+    <button id="stop1" class="btn btn-danger d-none">Stop 1</button>
+    <button id="start1" class="btn btn-success">Start 1</button>
+    <button id="reset1" class="btn btn-primary">Reset 1</button>
+    <button id="shuffle" class="btn btn-warning">Shuffle</button>
+    <button id="solve-backward" class="btn btn-dark">Solve backward</button>
+</div>
+<div class="buttons2" id="commands-container">
+
+</div>
+<div class="map-parent grid-container"></div>
+    <script type="module" src="./main.js"></script>
+    <script src="./node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

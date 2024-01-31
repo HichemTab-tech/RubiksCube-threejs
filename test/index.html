@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Rubik's Cube</title>
+    <link rel="stylesheet" href="./../node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./../node_modules/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="./../style.css">
+</head>
+<body class="test-env">
+    <div class="buttons">
+        <button id="reset_camera" class="btn btn-primary">Reset Camera</button>
+        <button id="stop" class="btn btn-danger d-none">Stop</button>
+        <button id="start" class="btn btn-success">Start</button>
+        <button id="stop1" class="btn btn-danger d-none">Stop 1</button>
+        <button id="start1" class="btn btn-success">Start 1</button>
+        <button id="reset1" class="btn btn-primary">Reset 1</button>
+        <button id="shuffle" class="btn btn-warning" onclick="makeInitialMoves()">Shuffle</button>
+        <button id="solve-backward" class="btn btn-dark" onclick="solve()">Solve backward</button>
+    </div>
+    <div id="range-container" class="p-4 bg-light border">
+        <div class="volume-control">
+            <label for="volume1">x</label>
+            <input type="range" class="custom-range" id="volume1" min="-20" max="20" data-inp="1">
+            <span id="display1">0</span>
+        </div>
+        <div class="volume-control">
+            <label for="volume2">y</label>
+            <input type="range" class="custom-range" id="volume2" min="-20" max="20" data-inp="2">
+            <span id="display2">0</span>
+        </div>
+        <div class="volume-control">
+            <label for="volume3">z</label>
+            <input type="range" class="custom-range" id="volume3" min="-20" max="20" data-inp="3">
+            <span id="display3">0</span>
+        </div>
+        <div class="volume-control">
+            <label for="volume4">light</label>
+            <input type="range" class="custom-range2" id="volume4" min="-20" max="70" value="5" data-inp="4">
+            <span id="display4">1</span>
+        </div>
+        <div class="volume-control">
+            <label for="volume5">a light</label>
+            <input type="range" class="custom-range2" id="volume5" min="-20" max="70" value="5" data-inp="5">
+            <span id="display5">1</span>
+        </div>
+    </div>
+    <div class="buttons2" id="commands-container">
+
+    </div>
+    <div class="map-parent grid-container"></div>
+    <script type="module" src="test.js"></script>
+    <script src="./../node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="./../node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

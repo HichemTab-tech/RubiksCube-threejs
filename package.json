@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "serve": "npx vite"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.2",
+    "bootstrap-icons": "^1.11.3",
+    "jquery": "^3.7.1",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.11"
+  }
+}

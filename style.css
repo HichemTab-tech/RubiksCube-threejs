@@ -1,0 +1,198 @@
+@font-face {
+    font-family: 'MyFont';
+    src: url('/assets/fonts/SamuraiBlast-YznGj.ttf'); /* Update with the path to your font file */
+}
+
+body {
+    margin: 0;
+    font-family: MyFont, sans-serif;
+}
+
+html.test-env{
+    height: 100%;
+}
+body.test-env{
+    background-color: #050505;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    height: 100%;
+}
+
+.buttons{
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 10px;
+    z-index: 100;
+    display: flex;
+    align-content: center;
+    flex-flow: column;
+}
+
+.buttons2{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin: 10px;
+    z-index: 100;
+    align-content: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: auto auto;
+}
+.test-env .buttons2{
+    grid-template-columns: auto auto auto auto;
+}
+
+.buttons .btn{
+    margin: 5px 0;
+}
+
+.buttons2 .btn{
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#range-container {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 300px;
+}
+
+.volume-control {
+    margin-bottom: 20px;
+}
+
+.my-draggable-div {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100px;
+    height: 100px;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: move;
+}
+
+.map-parent{
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 20px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    border: 4px solid #333333;
+}
+
+.test-env .map-parent{
+    position: relative;
+}
+
+.one-map-parent{
+    position: relative;
+}
+
+.one-map-parent .map-name-parent{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    height: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.one-map-parent .map-name-parent .map-name{
+    font-size: 40px;
+    color: #222222;
+    opacity: 0.5;
+}
+
+.test-env .one-map-parent .map-name-parent .map-name{
+    font-size: 60px;
+    font-family: Arial, serif;
+}
+
+.map-parent .map{
+    background-color: #050505;
+    padding: 2px;
+    width: 45px;
+    height: 45px;
+    display: grid;
+    gap: 2px;
+    grid-template-columns: auto auto auto;
+    grid-template-rows: auto auto auto;
+}
+
+.test-env .map-parent .map{
+    padding: 6px;
+    width: 135px;
+    height: 135px;
+    gap: 6px;
+}
+
+.grid-container {
+    display: grid;
+    gap: 5px;
+    grid-template-columns: auto auto auto auto;
+    grid-template-rows: auto auto auto;
+}
+
+.grid-container .one-map-parent:nth-child(1){
+    grid-column: 2 / 5;
+}
+
+.grid-container .one-map-parent:nth-child(6){
+    grid-column: 2 / 5;
+}
+
+[data-color-index="0"] {
+    background-color: #C52E36;
+}
+
+[data-color-index="1"] {
+    background-color: #E46C15;
+}
+
+[data-color-index="2"] {
+    background-color: #EBD51B;
+}
+
+[data-color-index="3"] {
+    background-color: #FFFFFF;
+}
+
+[data-color-index="4"] {
+    background-color: #304FC9;
+}
+
+[data-color-index="5"] {
+    background-color: #019719;
+}
+
+.one-2d-texture.tracked{
+    position: relative;
+}
+.one-2d-texture.tracked::after{
+    content: '';
+    display: block;
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    margin: auto;
+    background-color: black;
+    box-shadow: 0 0 2px 1px #EBD51B, 0 0 4px 2px #EBD51B, 0 0 8px 4px #EBD51B;
+}
