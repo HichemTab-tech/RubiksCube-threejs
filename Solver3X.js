@@ -754,7 +754,7 @@ export default class Solver3X extends BaseSolver{
         this.#move(nextMoves);
     }
 
-    #createFixLastFaceDiagonalPlaces(faceId, right) {
+    #createFixLastFaceDiagonalPlaces(faceId, right = true) {
         let firstFaceId = this.baseFirstFaceId;
         let oppositeFace = BaseSolver.getOppositeFace(firstFaceId);
 

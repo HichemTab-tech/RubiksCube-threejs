@@ -673,7 +673,20 @@ function solve() {
     moves.push(...newMoves);
     [temp, newMoves] = solveDiagonalsPositionOfLastFace(temp);
     moves.push(...newMoves);
+    let x = copyList(moves);
     moves = optimizeMoves(moves);
+    let y = copyList(moves);
+    let array1 = x;
+    let array2 = y;
+
+    let maxLength = Math.max(array1.length, array2.length);
+
+    let combinedArray = Array.from({length: maxLength}, (_, i) => ({
+        column1: array1[i] !== undefined ? (array1[i].faceId+"-"+array1[i].clockwise) : null,
+        column2: array2[i] !== undefined ? array2[i].faceId+"-"+array2[i].clockwise : null
+    }));
+
+    console.table(combinedArray);
     console.log(moves);
 }
 
@@ -1067,8 +1080,7 @@ function solveEdgeOfLastFace(temp) {
 
 function solveDiagonalsPositionOfLastFace(temp) {
     let moves = [];
-    let firstFaceId = baseFirstFaceId;
-    let oppositeFace = getOppositeFace(firstFaceId);
+    let oppositeFace = getOppositeFace(baseFirstFaceId);
     let diagonalsCubes = getCubes(temp, oppositeFace, false);
     let cycle = getCycle(oppositeFace);
     console.log(diagonalsCubes);
@@ -1277,10 +1289,9 @@ function createFixLastFaceEdgePlaces(temp, faceId) {
     return [temp, moves];
 }
 
-function createFixLastFaceDiagonalPlaces(temp, faceId, right) {
+function createFixLastFaceDiagonalPlaces(temp, faceId, right = true) {
     let moves = [];
-    let firstFaceId = baseFirstFaceId;
-    let oppositeFace = getOppositeFace(firstFaceId);
+    let oppositeFace = getOppositeFace(baseFirstFaceId);
 
     let relation = getRelation(oppositeFace, faceId);
     let side = relation[1];
@@ -1435,108 +1446,53 @@ function turn2times(faceId) {
 function optimizeMoves(moves) {
     let list = copyList(moves);
 
-    let a = true;
-    let b = true;
-    let c = true;
-    while (a || b || c) {
-        if (a) {
-            while (optimizeMoves_check_oppositeMoves(list)) {
-                for (let i = 0; i < list.length - 1; i++) {
-                    if (list[i].faceId === list[i + 1].faceId && list[i].clockwise !== list[i + 1].clockwise) {
-                        // Remove the canceling moves
-                        list.splice(i, 2);
-                        // Go back to recheck as removed moves cause reindexing and the next move becomes current one.
-                        i--;
-                    }
-                }
-            }
-        }
-        if (b) {
-            while (optimizeMoves_check_4_similarMoves(list)) {
-                for (let i = 0; i < list.length - 3; i++) {
-                    let same = true;
-                    for (let j = 0; j < 3; j++) {
-                        if (list[i+j].faceId !== list[i+j + 1].faceId || list[i+j].clockwise !== list[i+j + 1].clockwise) {
-                            same = false;
-                        }
-                    }
-                    if (same) {
-                        console.log("splice");
-                        list.splice(i, 2);
-                        i--; // I added this line to go back one place and compare the new element with the next elements.
-                    }
-                }
-            }
-        }
-        if (c) {
-            while (optimizeMoves_check_3_similarMoves(list)) {
-                for (let i = 0; i < list.length - 2; i++) {
-                    let same = true;
-                    let obj = copyList(list[i]);
-                    for (let j = 0; j < 2; j++) {
-                        if (list[i+j].faceId !== list[i+j + 1].faceId || list[i+j].clockwise !== list[i+j + 1].clockwise) {
-                            same = false;
-                        }
-                    }
-                    if (same) {
-                        console.log("splice00");
-                        list.splice(i, 3, {faceId: obj.faceId, clockwise: !obj.clockwise});
-                        i--; // I added this line to go back one place and compare the new element with the next elements.
-                    }
-                }
-            }
-        }
-        console.log("--");
+    let part1Result = [];
+    for (let i = 0; i < list.length; i++) {
+        const currentItem = list[i];
+        const prevItem = part1Result[part1Result.length - 1];
 
-        //a = false;
-        //b = false;
-        //c = false;
-        a = optimizeMoves_check_oppositeMoves(list);
-        b = optimizeMoves_check_4_similarMoves(list);
-        c = optimizeMoves_check_3_similarMoves(list);
+        if (prevItem && currentItem.faceId === prevItem.faceId && currentItem.clockwise !== prevItem.clockwise) {
+            // Opposite direction, remove the previous element
+            part1Result.pop();
+        } else {
+            // Either no previous item or not opposite direction, keep the current item
+            part1Result.push(currentItem);
+        }
     }
+    list = part1Result;
 
+
+    let part2Result = [];
+    for (let i = 0; i < list.length; i++) {
+        if (i < list.length - 2 &&
+            list[i].faceId === list[i + 1].faceId &&
+            list[i].faceId === list[i + 2].faceId &&
+            list[i].clockwise === list[i + 1].clockwise &&
+            list[i].clockwise === list[i + 2].clockwise) {
+            part2Result.push({ faceId: list[i].faceId, clockwise: !list[i].clockwise });
+            i += 2;
+        } else {
+            part2Result.push(list[i]);
+        }
+    }
+    list = part2Result;
+
+    let part3Result = [];
+    for (let i = 0; i < list.length; i++) {
+        if (i < list.length - 3 &&
+            list[i].faceId === list[i + 1].faceId &&
+            list[i].faceId === list[i + 2].faceId &&
+            list[i].faceId === list[i + 3].faceId &&
+            list[i].clockwise === list[i + 1].clockwise &&
+            list[i].clockwise === list[i + 2].clockwise &&
+            list[i].clockwise === list[i + 3].clockwise) {
+            i += 3;
+        } else {
+            part3Result.push(list[i]);
+        }
+    }
+    list = part3Result;
     return list;
-}
-
-function optimizeMoves_check_oppositeMoves(list) {
-    for(let i = 0; i < list.length - 1; i++) {
-        if (list[i].faceId === list[i+1].faceId && list[i].clockwise !== list[i+1].clockwise) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function optimizeMoves_check_4_similarMoves(list) {
-    for(let i = 0; i < list.length - 3; i++) {
-        let same = true;
-        for (let j = 0; j < 3; j++) {
-            if (list[i+j].faceId !== list[i+j+1].faceId || list[i+j].clockwise !== list[i+j+1].clockwise) {
-                same = false;
-            }
-        }
-        if (same) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function optimizeMoves_check_3_similarMoves(list) {
-    for(let i = 0; i < list.length - 2; i++) {
-        let same = true;
-        for (let j = 0; j < 2; j++) {
-            if (list[i+j].faceId !== list[i+j+1].faceId || list[i+j].clockwise !== list[i+j+1].clockwise) {
-                same = false;
-                break;
-            }
-        }
-        if (same) {
-            return true;
-        }
-    }
-    return false;
 }
 
 /** @param cube
