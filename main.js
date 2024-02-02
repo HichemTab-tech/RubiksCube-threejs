@@ -40,8 +40,6 @@ scene.add(RubiksCube);
 
 
 
-
-
 const controls = new OrbitControls( camera, renderer.domElement );
 
 camera.position.z = 6;
@@ -173,7 +171,8 @@ $("#shuffle").click(function () {
 });
 
 $("#solve-backward").click(function () {
-    game.solveBackward();
+    //game.solveBackward();
+    game.gameSolver.start();
 });
 
 

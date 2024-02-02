@@ -2,9 +2,10 @@ import FakeCube from "./fakeCube";
 import {initialMoves} from './t';
 
 const size = 3;
+const baseFirstFaceId = 0;
 const numbers = [2,4,0,5,1,3];
 let maps = numbers.map(() => []);
-const tracked = [/*"2F-03", "2F-14"*/];
+const tracked = ["2F-03", "2F-14"];
 const mapParentHtmlElement = $(".map-parent");
 function createMap() {
     mapParentHtmlElement.innerHTML = "";
@@ -652,24 +653,7 @@ function getCubeByColors(mapsList_, colors) {
         }
     }
 }
-/*function getCubeByColorsOfParent(mapsList_, parentColors) {
-    let mapsList = copyList(mapsList_);
-    let testColor = colors[0];
-    for (let i = 0; i < mapsList.length; i++) {
-        for (let j = 0; j < mapsList[i].length; j++) {
-            if (i === testColor) {
-                if (!isColorsFitCubeIndex(colors.length, j)) continue;
-                let cube = getCube(mapsList, i, j, true);
-                if (cube !== null) {
-                    let cubeColors = cube.getColors();
-                    if (cubeColors.every(color => colors.includes(color))) {
-                        return cube;
-                    }
-                }
-            }
-        }
-    }
-}*/
+
 window.getCube = getCube;
 window.getCubes = getCubes;
 window.relations = relations;
@@ -698,7 +682,7 @@ window.move = move;
 
 function solveEdgeOfFirstFace(temp) {
     let moves = [];
-    let firstFaceId = 0;
+    let firstFaceId = baseFirstFaceId;
     let edgesCubes = getCubes(temp, firstFaceId, true);
     let cycle = getCycle(firstFaceId);
     //let n = 0;
@@ -761,7 +745,7 @@ function solveEdgeOfFirstFace(temp) {
 
 function solveDiagonalsOfFirstFace(temp) {
     let moves = [];
-    let firstFaceId = 0;
+    let firstFaceId = baseFirstFaceId;
     let diagonalsCubes = getCubes(temp, firstFaceId, false);
     console.log(diagonalsCubes);
     let oppositeFace = getOppositeFace(firstFaceId);
@@ -949,7 +933,7 @@ function solveDiagonalsOfFirstFace(temp) {
 
 function solveEdgeOfSecondRow(temp) {
     let moves = [];
-    let firstFaceId = 0;
+    let firstFaceId = baseFirstFaceId;
     let secondRowEdgeCubes = getSecondRowEdges(firstFaceId, temp);
     let oppositeFace = getOppositeFace(firstFaceId);
     let n = 0;
@@ -997,7 +981,7 @@ function solveEdgeOfSecondRow(temp) {
 
 function solveEdgeOfLastFace(temp) {
     let moves = [];
-    let firstFaceId = 0;
+    let firstFaceId = baseFirstFaceId;
     let oppositeFace = getOppositeFace(firstFaceId);
     let edgesCubes = getCubes(temp, oppositeFace, true);
     let cycle = getCycle(oppositeFace);
@@ -1083,7 +1067,7 @@ function solveEdgeOfLastFace(temp) {
 
 function solveDiagonalsPositionOfLastFace(temp) {
     let moves = [];
-    let firstFaceId = 0;
+    let firstFaceId = baseFirstFaceId;
     let oppositeFace = getOppositeFace(firstFaceId);
     let diagonalsCubes = getCubes(temp, oppositeFace, false);
     let cycle = getCycle(oppositeFace);
@@ -1165,7 +1149,7 @@ function solveDiagonalsPositionOfLastFace(temp) {
 
 function createFixLastFaceEdgeAvailability(temp, faceId) {
     let moves = [];
-    let firstFaceId = 0;
+    let firstFaceId = baseFirstFaceId;
     let oppositeFace = getOppositeFace(firstFaceId);
     let cycle = getCycle(oppositeFace);
 
@@ -1244,7 +1228,7 @@ function createFixLastFaceEdgeAvailability(temp, faceId) {
 
 function createFixLastFaceEdgePlaces(temp, faceId) {
     let moves = [];
-    let firstFaceId = 0;
+    let firstFaceId = baseFirstFaceId;
     let oppositeFace = getOppositeFace(firstFaceId);
 
     let relation = getRelation(oppositeFace, faceId);
@@ -1295,7 +1279,7 @@ function createFixLastFaceEdgePlaces(temp, faceId) {
 
 function createFixLastFaceDiagonalPlaces(temp, faceId, right) {
     let moves = [];
-    let firstFaceId = 0;
+    let firstFaceId = baseFirstFaceId;
     let oppositeFace = getOppositeFace(firstFaceId);
 
     let relation = getRelation(oppositeFace, faceId);
@@ -1348,7 +1332,7 @@ function createFixLastFaceDiagonalPlaces(temp, faceId, right) {
 
 function createFixLastFaceDiagonalDirection(temp, faceOnRight) {
     let moves = [];
-    let firstFaceId = 0;
+    let firstFaceId = baseFirstFaceId;
     for (let i = 0; i < 2; i++) {
         moves.push(...[
             {
@@ -1553,16 +1537,6 @@ function optimizeMoves_check_3_similarMoves(list) {
         }
     }
     return false;
-}
-
-function replaceConsecutiveThree(list, newElement) {
-    for(let i = 0; i < list.length - 2; i++) {
-        if (list[i] === list[i+1] && list[i+1] === list[i+2]) {
-            list.splice(i, 3, newElement);
-            i--; // I added this line to go back one place and compare the new element with the next elements.
-        }
-    }
-    return list;
 }
 
 /** @param cube

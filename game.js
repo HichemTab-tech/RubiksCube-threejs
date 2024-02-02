@@ -2,6 +2,8 @@ import Face from './face.js';
 import Cube from "./cube";
 import * as THREE from 'three';
 import Map from "./map";
+import GameSolver from "./GameSolver";
+
 export default class Game {
 
 
@@ -16,6 +18,8 @@ export default class Game {
     static whiteColor = "#ffffff";
     static defaultColor = "#888888";
     static allColors = [Game.redColor, Game.orangeColor, Game.yellowColor, Game.whiteColor, Game.blueColor, Game.greenColor, Game.defaultColor];
+    /** @type GameSolver */
+    gameSolver;
 
     /** @type Cube[] */
     cubes = [];
@@ -47,7 +51,7 @@ export default class Game {
         this.createPivotPoints();
         this.refreshMaps();
         this.createCommandsButtons();
-
+        this.gameSolver = new GameSolver(this);
     }
 
     createCubes() {
@@ -203,6 +207,7 @@ export default class Game {
             }
         }
         this.map.fillMapsDom();
+        this.map.maps = this.map.domMaps;
     }
 
     createCommandsButtons() {
