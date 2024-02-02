@@ -32,7 +32,7 @@ export default class GameSolver {
             },
             OnSolvingSuccess: (moves) => {
                 console.log('Solving success', moves);
-                //this.game.move(moves);
+                this.game.move(moves, 2);
             },
             OnSolvingFailed: () => {
                 console.log('Solving fail');

@@ -31,7 +31,7 @@ export default class Game {
 
     scene;
 
-    static speeds = [0.03,0.1,0.15];
+    static speeds = [0.03,0.1,0.15,0.25];
 
     tmpMoveProgress = 0;
     tmpMaxMoveProgress = 0;
@@ -233,7 +233,17 @@ export default class Game {
             });
     }
 
-    move(faceId, clockwise) {
+    move(faceId, clockwise = null) {
+        if (Array.isArray(faceId)) {
+            if (clockwise !== null) {
+                faceId = faceId.map((f) => {
+                    f.speed = clockwise;
+                    return f;
+                });
+            }
+            this.movesToMake.push(...faceId);
+            return;
+        }
         let move = {
             faceId: faceId,
             clockwise: clockwise,
@@ -330,7 +340,7 @@ export default class Game {
         return {
             faceId: Math.floor(Math.random() * 6),
             clockwise: Math.random() < 0.5,
-            speed: 2,
+            speed: 3,
         }
     }
 

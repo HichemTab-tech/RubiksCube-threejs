@@ -19,7 +19,7 @@ export default class BaseSolver {
     /** @type Move[] */
     moves;
     temp;
-    baseFirstFaceId = 0;
+    baseFirstFaceId = 3;
     /** @type GameListener */
     _gameListener;
     /** @type BaseGameListener */
