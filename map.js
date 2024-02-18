@@ -3,9 +3,11 @@ export default class Map {
     mapParentHtmlElement;
     domMaps = [];
     #maps = [];
+    game;
 
 
-    constructor(mapParentHtmlElement = null) {
+    constructor(game, mapParentHtmlElement = null) {
+        this.game = game;
         this.mapParentHtmlElement = mapParentHtmlElement;
         this.init();
     }
@@ -27,10 +29,15 @@ export default class Map {
         const numbers = [2,4,0,5,1,3];
         for (let i = 0; i < 6; i++) {
             let divMap = $('<div>').addClass('map').attr('data-map', numbers[i]);
+            let str = Array(this.game.RubiksSize).fill('auto').join(" ");
+            divMap.css({
+                'grid-template-rows': str,
+                'grid-template-columns': str
+            });
             this.domMaps.push([]);
-            for (let j = 0; j < 9; j+=3) {
-                for (let k = 0; k < 3; k++) {
-                    let divTexture = $('<div>').addClass('one-2d-texture').attr('data-order', 6-j+k);
+            for (let j = 0; j < Math.pow(this.game.RubiksSize, 2); j+=this.game.RubiksSize) {
+                for (let k = 0; k < this.game.RubiksSize; k++) {
+                    let divTexture = $('<div>').addClass('one-2d-texture').attr('data-order', this.game.RubiksSize*(this.game.RubiksSize-1)-j+k);
                     divMap.append(divTexture);
                     this.domMaps[i].push(-1);
                 }
@@ -44,7 +51,7 @@ export default class Map {
 
     fillMapsDom() {
         for (let i = 0; i < 6; i++) {
-            for (let j = 0; j < 9; j++) {
+            for (let j = 0; j < Math.pow(this.game.RubiksSize, 2); j++) {
                 this.mapParentHtmlElement.find('.map[data-map="'+i+'"] .one-2d-texture[data-order="'+j+'"]').attr('data-color-index', this.domMaps[i][j]);
             }
         }

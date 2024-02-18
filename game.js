@@ -6,9 +6,14 @@ import GameSolver from "./GameSolver";
 
 export default class Game {
 
+    controls;
+    camera;
+    renderer;
+    raycaster;
+    pointer = new THREE.Vector2();
 
-    static RubiksSize = 3
-    static start=-1*(Game.RubiksSize/2)+0.5
+    RubiksSize = 3
+    start;
 
     static redColor = "#C52E36";
     static greenColor = "#019719";
@@ -31,7 +36,7 @@ export default class Game {
 
     scene;
 
-    static speeds = [0.03,0.1,0.15,0.25];
+    static speeds = [0.03,0.1,0.15,0.15];
 
     tmpMoveProgress = 0;
     tmpMaxMoveProgress = 0;
@@ -39,36 +44,100 @@ export default class Game {
     movesToMake = [];
     movesHistory=[];
 
-    constructor(scene, mapParentHtmlElement) {
+    /** @type {false|object} */
+    #isMouseDown = false;
+
+    bigCubes;
+
+    bigCycle;
+
+    constructor(renderer, scene, camera, mapParentHtmlElement, controls) {
         this.scene = scene;
-        this.map = new Map(mapParentHtmlElement);
+        this.renderer = renderer;
+        this.camera = camera;
+        this.map = new Map(this, mapParentHtmlElement);
+        this.controls = controls;
+        this.bigCycle = [0];
+        while (this.bigCycle[this.bigCycle.length-1]+this.RubiksSize<=(Math.pow(this.RubiksSize, 2)-this.RubiksSize)) {
+            this.bigCycle.push(this.bigCycle[this.bigCycle.length-1]+this.RubiksSize);
+        }
+        while (this.bigCycle[this.bigCycle.length-1]+1<Math.pow(this.RubiksSize, 2)) {
+            this.bigCycle.push(this.bigCycle[this.bigCycle.length-1]+1);
+        }
+        while (this.bigCycle[this.bigCycle.length-1]-this.RubiksSize>=(this.RubiksSize-1)) {
+            this.bigCycle.push(this.bigCycle[this.bigCycle.length-1]-this.RubiksSize);
+        }
+        while (this.bigCycle[this.bigCycle.length-1]-1>0) {
+            this.bigCycle.push(this.bigCycle[this.bigCycle.length-1]-1);
+        }
         this.init();
     }
 
     init() {
+        // noinspection JSCheckFunctionSignatures
+        this.raycaster = new THREE.Raycaster();
+        this.start = -1*(this.RubiksSize-1)/2;
         this.createCubes();
         this.makeFaces();
         this.createPivotPoints();
         this.refreshMaps();
         this.createCommandsButtons();
+        this.createMouseEvents();
         this.gameSolver = new GameSolver(this);
     }
 
     createCubes() {
+        const bigCubeSize = 30;
+        let geometry = new THREE.BoxGeometry(1, bigCubeSize, bigCubeSize);
+        const material = new THREE.MeshBasicMaterial({color: 0x00ff00});
+        this.bigCubes = [];
+        let c;
+        c = new THREE.Mesh(geometry, material);
+        c.position.x = bigCubeSize/2;
+        this.bigCubes.push(c);
+
+        c = new THREE.Mesh(geometry, material);
+        c.position.x = -(bigCubeSize/2);
+        this.bigCubes.push(c);
+
+
+        geometry = new THREE.BoxGeometry(bigCubeSize, bigCubeSize, 1);
+        c = new THREE.Mesh(geometry, material);
+        c.position.z = bigCubeSize/2;
+        this.bigCubes.push(c);
+
+        c = new THREE.Mesh(geometry, material);
+        c.position.z = -(bigCubeSize/2);
+        this.bigCubes.push(c);
+
+
+        geometry = new THREE.BoxGeometry(bigCubeSize, 1, bigCubeSize);
+        c = new THREE.Mesh(geometry, material);
+        c.position.y = bigCubeSize/2;
+        this.bigCubes.push(c);
+
+        c = new THREE.Mesh(geometry, material);
+        c.position.y = -(bigCubeSize/2);
+        this.bigCubes.push(c);
+
+        for (let i = 0; i < this.bigCubes.length; i++) {
+            //this.scene.add(this.bigCubes[i]);
+        }
+
         this.RubiksCube = new THREE.Group();
-        let max= Game.RubiksSize;
-        let start = Game.start;
+        let max= this.RubiksSize;
+        let start = this.start;
         for (let i = 0; i < max; i++) {
             for (let j = 0; j < max; j++) {
                 for (let k = 0; k < max; k++) {
                     let colors = [];
-                    colors.push(i===2 ? 0 : 6);
+                    colors.push(i===(max-1) ? 0 : 6);
                     colors.push(i===0 ? 1 : 6);
-                    colors.push(j===2 ? 2 : 6);
+                    colors.push(j===(max-1) ? 2 : 6);
                     colors.push(j===0 ? 3 : 6);
-                    colors.push(k===2 ? 4 : 6);
+                    colors.push(k===(max-1) ? 4 : 6);
                     colors.push(k===0 ? 5 : 6);
-                    let cube = new Cube(colors);
+                    let cube = new Cube(colors, [i,j,k].filter((n) => n === (max-1)/2).length===2);
                     cube.ThreeCube.position.x += i+start;
                     cube.ThreeCube.position.y += j+start;
                     cube.ThreeCube.position.z += k+start;
@@ -77,12 +146,14 @@ export default class Game {
                 }
             }
         }
+
+        this.RubiksCube.cursor = 'pointer';
     }
 
     createPivotPoints() {
         let pivotPoints = [];
         let pivotPoint;
-        const dis = (Game.RubiksSize-2)/2+0.5;
+        const dis = (this.RubiksSize-2)/2+0.5;
         pivotPoint = new THREE.Object3D();
         pivotPoint.position.x = dis;
         pivotPoint.position.y = 0;
@@ -129,48 +200,73 @@ export default class Game {
         let bigGroup = this.cubes;
         let face;
         face = new Face(0);
-        face.group = bigGroup.slice(18);
+        face.group = bigGroup.slice(Math.pow(this.RubiksSize, 2)*(this.RubiksSize - 1));
         this.faces.push(face);
 
         face = new Face(1);
-        face.group = bigGroup.slice(0, 9);
+        face.group = bigGroup.slice(0, Math.pow(this.RubiksSize, 2));
         this.faces.push(face);
 
         face = new Face(2);
-        face.addToGroup(bigGroup.slice(-3).reverse());
-        face.addToGroup(bigGroup.slice(15, 18).reverse());
-        face.addToGroup(bigGroup.slice(6, 9).reverse());
+        face.addToGroup(bigGroup.slice(-this.RubiksSize).reverse());
+        for (let i = this.RubiksSize - 2; i >= 0; i--) {
+            face.addToGroup(bigGroup.slice((this.RubiksSize*(this.RubiksSize - 1 + this.RubiksSize*i)), (this.RubiksSize*(this.RubiksSize + this.RubiksSize*i))).reverse());
+        }
         this.faces.push(face);
 
         face = new Face(3);
-        face.addToGroup(bigGroup.slice(0, 3).reverse());
-        face.addToGroup(bigGroup.slice(9, 12).reverse());
-        face.addToGroup(bigGroup.slice(18, 21).reverse());
+        for (let i = 0; i < this.RubiksSize; i++) {
+            face.addToGroup(bigGroup.slice(Math.pow(this.RubiksSize, 2)*i, Math.pow(this.RubiksSize, 2)*i+this.RubiksSize).reverse());
+        }
         this.faces.push(face);
 
         face = new Face(4);
-        for (let i = 0; i < 3; i++) {
-            face.addToGroup(bigGroup[2+i*9]);
-        }
-        for (let i = 0; i < 3; i++) {
-            face.addToGroup(bigGroup[5+i*9]);
-        }
-        for (let i = 0; i < 3; i++) {
-            face.addToGroup(bigGroup[8+i*9]);
+        for (let i = 0; i < this.RubiksSize; i++) {
+            for (let j = 0; j < this.RubiksSize; j++) {
+                face.addToGroup(bigGroup[(i+1)*this.RubiksSize-1+j*Math.pow(this.RubiksSize, 2)]);
+            }
         }
         this.faces.push(face);
 
         face = new Face(5);
-        for (let i = 2; i >= 0; i--) {
-            face.addToGroup(bigGroup[i*9]);
-        }
-        for (let i = 2; i >= 0; i--) {
-            face.addToGroup(bigGroup[3+i*9]);
-        }
-        for (let i = 2; i >= 0; i--) {
-            face.addToGroup(bigGroup[6+i*9]);
+        for (let i = 0; i < this.RubiksSize; i++) {
+            for (let j = this.RubiksSize - 1; j >= 0; j--) {
+                face.addToGroup(bigGroup[i*this.RubiksSize+j*Math.pow(this.RubiksSize, 2)]);
+            }
         }
         this.faces.push(face);
+
+        for (let i = 0; i < this.RubiksSize - 2; i++) {
+            face = new Face(1000+i+1);
+            face.group = bigGroup.slice(Math.pow(this.RubiksSize, 2)*(this.RubiksSize - (i+2)), Math.pow(this.RubiksSize, 3)-Math.pow(this.RubiksSize, 2)*(i+1));
+            this.faces.push(face);
+        }
+
+        for (let i = 0; i < this.RubiksSize - 2; i++) {
+            face = new Face(1200+i+1);
+            face.addToGroup(bigGroup.slice(-this.RubiksSize*(i+2), Math.pow(this.RubiksSize, 3)-this.RubiksSize*(i+1)).reverse());
+            for (let j = this.RubiksSize - 2; j >= 0; j--) {
+                face.addToGroup(bigGroup.slice((this.RubiksSize*(this.RubiksSize - (i+2) + this.RubiksSize*j)), (this.RubiksSize*(this.RubiksSize - (i+1) + this.RubiksSize*j))).reverse());
+            }
+            this.faces.push(face);
+        }
+
+        for (let i = this.RubiksSize - 3; i >= 0; i--) {
+            face = new Face(1400+this.RubiksSize - 3-i+1);
+            for (let j = 0; j < this.RubiksSize; j++) {
+                for (let k = 0; k < this.RubiksSize; k++) {
+                    face.addToGroup(bigGroup[j*this.RubiksSize+(i+1)+k*Math.pow(this.RubiksSize, 2)]);
+                }
+            }
+            this.faces.push(face);
+        }
+
+        for (let i = 0; i < this.faces.length; i++) {
+            let group = this.faces[i].group;
+            for (let j = 0; j < group.length; j++) {
+                group[j].parents[this.faces[i].axe] = this.faces[i].faceId;
+            }
+        }
     }
 
     refreshFaces() {
@@ -178,17 +274,19 @@ export default class Game {
             this.faces[i].group = [];
         }
         const faceConditions= [
-            ["x", 1],
-            ["x", -1],
-            ["y", 1],
-            ["y", -1],
-            ["z", 1],
-            ["z", -1],
+            ["x", (this.RubiksSize-1)/2],
+            ["x", -(this.RubiksSize-1)/2],
+            ["y", (this.RubiksSize-1)/2],
+            ["y", -(this.RubiksSize-1)/2],
+            ["z", (this.RubiksSize-1)/2],
+            ["z", -(this.RubiksSize-1)/2],
         ];
         for (let i = 0; i < this.cubes.length; i++) {
             let cubePos = this.cubes[i].ThreeCube.position;
+            this.cubes[i].resetParents();
             for (let j = 0; j < 6; j++) {
                 if (cubePos[faceConditions[j][0]] === faceConditions[j][1]) {
+                    this.cubes[i].parents[faceConditions[j][0]] = j;
                     this.faces[j].addToGroup(this.cubes[i]);
                 }
             }
@@ -202,7 +300,7 @@ export default class Game {
         for (let i = 0; i < 6; i++) {
             /** @var Face */
             let face = this.findFace(i);
-            for (let j = 0; j < 9; j++) {
+            for (let j = 0; j < Math.pow(this.RubiksSize, 2); j++) {
                 this.map.domMaps[i][j] = face.group[j].colors[face.axe];
             }
         }
@@ -231,6 +329,65 @@ export default class Game {
                 let clockwise = $(this).attr('data-clockwise')==="1";
                 instance.move(parseInt(faceId), clockwise);
             });
+    }
+
+    animationLoop() {
+
+    }
+
+    createMouseEvents() {
+        let game = this;
+        let mousedown = (ev) => {
+            console.log(ev);
+            game.#isMouseDown = {
+                faceUUID: null,
+                faceToMove: -1
+            };
+            game.controls.enabled = false;
+        };
+        let mousemove = (ev) => {
+            if (game.#isMouseDown !== false) {
+                //console.log(ev);
+                // Check for intersections with the cube
+                const intersects = ev.intersects;
+                //console.log([...intersects]);
+                if (game.#isMouseDown.faceToMove === -1) {
+                    if (intersects.length > 0) {
+                        let newUuid = intersects[0].object.parent.uuid;
+                        if (game.#isMouseDown.faceUUID === null) {
+                            console.log(newUuid);
+                            game.#isMouseDown.faceUUID = newUuid;
+                        } else {
+                            if (game.#isMouseDown.faceUUID !== newUuid) {
+                                console.log(game.#isMouseDown.faceUUID, newUuid);
+                                let cube1 = game.cubes.find((c) => c.uuid === game.#isMouseDown.faceUUID);
+                                let cube2 = game.cubes.find((c) => c.uuid === newUuid);
+                                let thisFace = cube2.getParentOfTransparent(intersects[0].object.uuid);
+                                console.log("thisFace", thisFace);
+                                let intersection = Object.values(cube1.parents).filter(x => Object.values(cube2.parents).includes(x));
+                                console.log("intersection", intersection, cube1.parents, cube2.parents);
+                                let faceToTurn = intersection.filter((i) => i!==thisFace)[0];
+                                let faceUuids = game.findFace(faceToTurn).group.map((c) => c.uuid);
+                                let index1 = faceUuids.indexOf(cube1.uuid);
+                                let index2 = faceUuids.indexOf(cube2.uuid);
+                                game.#isMouseDown.faceToMove = faceToTurn;
+                                console.log("faceToTurn", faceToTurn, index1, index2);
+                                mouseup();
+                                let clockwise = this.bigCycle[this.bigCycle.indexOf(index1)+1%this.bigCycle.length] === index2;
+                                game.move(faceToTurn, clockwise);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        let mouseup = (_ev) => {
+            game.#isMouseDown = false;
+            game.controls.enabled = true;
+        };
+        game.scene.on('mousemove', (ev) => mousemove(ev));
+        game.scene.on('mouseup', (ev) => mouseup(ev));
+        game.scene.on('mousedown', (ev) => mousedown(ev));
     }
 
     move(faceId, clockwise = null) {
@@ -304,7 +461,7 @@ export default class Game {
             else{
                 this.tmpMoveProgress++;
                 if (this.tmpMaxMoveProgress === this.tmpMoveProgress) {
-                    game.faces[move.faceId].turn(move, this.tmpRestProgress);
+                    game.faces[move.faceId].turn(move, Game.speeds[move.speed]*this.tmpRestProgress);
                 }
                 else {
                     game.faces[move.faceId].turn(move);
@@ -344,6 +501,7 @@ export default class Game {
         }
     }
 
+    // noinspection JSUnusedGlobalSymbols
     solveBackward() {
         let movesBackward = [...this.movesHistory].reverse();
         movesBackward.map((item) => {

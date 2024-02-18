@@ -5,6 +5,8 @@ import {OrbitControls} from "three/addons";
 import Game from './game';
 import {areNumbersAlmostEqual} from './utils';
 
+import Interaction from 'three.interaction/src/interaction/Interaction.js';
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
@@ -30,17 +32,17 @@ scene.add( light );
 
 
 
-let game = new Game(scene, $(".map-parent"));
+
+
+const controls = new OrbitControls( camera, renderer.domElement );
+
+
+let game = new Game(renderer, scene, camera, $(".map-parent"), controls);
 console.log(game);
 
 let RubiksCube = game.RubiksCube;
 
 scene.add(RubiksCube);
-
-
-
-
-const controls = new OrbitControls( camera, renderer.domElement );
 
 camera.position.z = 6;
 camera.position.x=-4
@@ -70,7 +72,7 @@ function startAnimation() {
     animations = 0;
     for (let i = 0; i < RubiksCube.children.length; i++) {
         let group = RubiksCube.children[i];
-        initPos[i] = [group.position.x-Game.start, group.position.y-Game.start, group.position.z-Game.start];
+        initPos[i] = [group.position.x-game.start, group.position.y-game.start, group.position.z-game.start];
     }
     stop[0] = false;
 }
@@ -89,6 +91,7 @@ function startAnimation1() {
 
 function animationLoop() {
 
+    game.animationLoop();
     controls.update();
     light.position.copy( camera.position );
     ambientLight.position.copy( camera.position );
@@ -121,11 +124,17 @@ function animationsList() {
                 initPos[i][1],
                 initPos[i][2],
             ];
-            coefs = [
-                pos[0] === 2 ? 1 : (pos[0] === 0 ? -1 : 0),
-                pos[1] === 2 ? 1 : (pos[1] === 0 ? -1 : 0),
-                pos[2] === 2 ? 1 : (pos[2] === 0 ? -1 : 0),
-            ];
+            coefs = [0,0,0];
+            for (let j = 0; j < 3; j++) {
+                let co = 0;
+                if (areNumbersAlmostEqual(pos[j],game.RubiksSize-1)) co = 1;
+                else if (areNumbersAlmostEqual(pos[j],0)) co = -1;
+                else if (areNumbersAlmostEqual(pos[j],game.start)) co = 0;
+                else {
+                    co = pos[j]/((game.RubiksSize-1)/2) - 1;
+                }
+                coefs[j] = co;
+            }
             group.position.x += coefs[0] * coef * 0.01;
             group.position.y += coefs[1] * coef * 0.01;
             group.position.z += coefs[2] * coef * 0.01;
@@ -134,7 +143,7 @@ function animationsList() {
 }
 
 function getPos(pos) {
-    return [pos.x-Game.start,pos.y-Game.start,pos.z-Game.start];
+    return [pos.x-game.start,pos.y-game.start,pos.z-game.start];
 }
 
 
@@ -175,8 +184,8 @@ $("#solve-backward").click(function () {
     game.gameSolver.start();
 });
 
-
-
+// noinspection JSUnusedLocalSymbols
+const interaction = new Interaction(renderer, scene, camera);
 
 window.game = game;
 window.RubiksCube = RubiksCube;

@@ -14,9 +14,9 @@ export default class Face {
     }
 
     #init() {
-        if (this.faceId===0||this.faceId===1) this.#axe="x";
-        if (this.faceId===2||this.faceId===3) this.#axe="y";
-        if (this.faceId===4||this.faceId===5) this.#axe="z";
+        if (this.faceId===0||this.faceId===1||this.faceId.toString().startsWith("10")) this.#axe="x";
+        if (this.faceId===2||this.faceId===3||this.faceId.toString().startsWith("12")) this.#axe="y";
+        if (this.faceId===4||this.faceId===5||this.faceId.toString().startsWith("14")) this.#axe="z";
     }
 
     get pivotPoint() {
@@ -92,11 +92,11 @@ export default class Face {
         this._group = cubes;
     }
 
-    turn(move, forcedStep = 1) {
+    turn(move, forcedStep = null) {
         let pivotPoint = this.pivotPoint;
         let axis = new THREE.Vector3();
         axis[this.axe] = 1;
-        let step = Game.speeds[move.speed]*forcedStep;
+        let step = forcedStep === null ? Game.speeds[move.speed] : forcedStep;
         let theta = move.clockwise ? -step : step;
         if ([1,3,5].includes(this.faceId)) theta = -1*theta;
         for (let i = 0; i < this._group.length; i++) {
@@ -115,6 +115,10 @@ export default class Face {
             colors[keys[0]] = cube.colors[newKeys[0]];
             colors[keys[1]] = cube.colors[newKeys[1]];
             cube.colors = colors;
+            let transparentIds = {...cube.transparentIds};
+            transparentIds[keys[0]] = cube.transparentIds[newKeys[0]];
+            transparentIds[keys[1]] = cube.transparentIds[newKeys[1]];
+            cube.transparentIds = transparentIds;
         }
     }
 
