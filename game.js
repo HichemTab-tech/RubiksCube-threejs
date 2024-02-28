@@ -151,48 +151,78 @@ export default class Game {
     }
 
     createPivotPoints() {
-        let pivotPoints = [];
+        let pivotPoints0 = [];
         let pivotPoint;
         const dis = (this.RubiksSize-2)/2+0.5;
         pivotPoint = new THREE.Object3D();
         pivotPoint.position.x = dis;
         pivotPoint.position.y = 0;
         pivotPoint.position.z = 0;
-        pivotPoints.push(pivotPoint);
+        pivotPoints0.push(pivotPoint);
 
         pivotPoint = new THREE.Object3D();
         pivotPoint.position.x = -dis;
         pivotPoint.position.y = 0;
         pivotPoint.position.z = 0;
-        pivotPoints.push(pivotPoint);
+        pivotPoints0.push(pivotPoint);
 
         pivotPoint = new THREE.Object3D();
         pivotPoint.position.x = 0;
         pivotPoint.position.y = dis;
         pivotPoint.position.z = 0;
-        pivotPoints.push(pivotPoint);
+        pivotPoints0.push(pivotPoint);
 
         pivotPoint = new THREE.Object3D();
         pivotPoint.position.x = 0;
         pivotPoint.position.y = -dis;
         pivotPoint.position.z = 0;
-        pivotPoints.push(pivotPoint);
+        pivotPoints0.push(pivotPoint);
 
         pivotPoint = new THREE.Object3D();
         pivotPoint.position.x = 0;
         pivotPoint.position.y = 0;
         pivotPoint.position.z = dis;
-        pivotPoints.push(pivotPoint);
+        pivotPoints0.push(pivotPoint);
 
         pivotPoint = new THREE.Object3D();
         pivotPoint.position.x = 0;
         pivotPoint.position.y = 0;
         pivotPoint.position.z = -dis;
-        pivotPoints.push(pivotPoint);
+        pivotPoints0.push(pivotPoint);
 
-        for (let i = 0; i < pivotPoints.length; i++) {
-            this.scene.add(pivotPoints[i]);
-            this.faces[i].pivotPoint = pivotPoints[i];
+        let pivotPoints = {};
+        for (let i = 0; i < pivotPoints0.length; i++) {
+            pivotPoints[i] = pivotPoints0[i];
+        }
+
+        for (let i = 0; i < this.RubiksSize - 2; i++) {
+            pivotPoint = new THREE.Object3D();
+            pivotPoint.position.x = dis-(i + 1);
+            pivotPoint.position.y = 0;
+            pivotPoint.position.z = 0;
+            pivotPoints[1000 + i + 1] = pivotPoint;
+        }
+
+        for (let i = 0; i < this.RubiksSize - 2; i++) {
+            pivotPoint = new THREE.Object3D();
+            pivotPoint.position.x = 0;
+            pivotPoint.position.y = dis-(i + 1);
+            pivotPoint.position.z = 0;
+            pivotPoints[1200 + i + 1] = pivotPoint;
+        }
+
+        for (let i = 0; i < this.RubiksSize - 2; i++) {
+            pivotPoint = new THREE.Object3D();
+            pivotPoint.position.x = 0;
+            pivotPoint.position.y = 0;
+            pivotPoint.position.z = dis-(i + 1);
+            pivotPoints[1400 + i + 1] = pivotPoint;
+        }
+
+        const keys = Object.keys(pivotPoints);
+        for (let i = 0; i < keys.length; i++) {
+            this.scene.add(pivotPoints[keys[i]]);
+            this.findFace(keys[i]).pivotPoint = pivotPoints[keys[i]];
         }
     }
 
@@ -200,7 +230,9 @@ export default class Game {
         let bigGroup = this.cubes;
         let face;
         face = new Face(0);
-        face.group = bigGroup.slice(Math.pow(this.RubiksSize, 2)*(this.RubiksSize - 1));
+        for (let i = 0; i < this.RubiksSize; i++) {
+            face.addToGroup([...bigGroup.slice(Math.pow(this.RubiksSize, 2)*(this.RubiksSize - 1)+this.RubiksSize*i, Math.pow(this.RubiksSize, 3)-this.RubiksSize*(this.RubiksSize-1-i))].reverse())
+        }
         this.faces.push(face);
 
         face = new Face(1);
@@ -238,7 +270,9 @@ export default class Game {
 
         for (let i = 0; i < this.RubiksSize - 2; i++) {
             face = new Face(1000+i+1);
-            face.group = bigGroup.slice(Math.pow(this.RubiksSize, 2)*(this.RubiksSize - (i+2)), Math.pow(this.RubiksSize, 3)-Math.pow(this.RubiksSize, 2)*(i+1));
+            for (let j = 0; j < this.RubiksSize; j++) {
+                face.addToGroup([...bigGroup.slice(Math.pow(this.RubiksSize, 2)*(this.RubiksSize - (i+2))+j*this.RubiksSize, Math.pow(this.RubiksSize, 2)*(this.RubiksSize - (i+2))+j*this.RubiksSize+this.RubiksSize)].reverse());
+            }
             this.faces.push(face);
         }
 
@@ -264,7 +298,9 @@ export default class Game {
         for (let i = 0; i < this.faces.length; i++) {
             let group = this.faces[i].group;
             for (let j = 0; j < group.length; j++) {
-                group[j].parents[this.faces[i].axe] = this.faces[i].faceId;
+                if (!group[j].parents[this.faces[i].axe].includes(this.faces[i].faceId)) {
+                    group[j].parents[this.faces[i].axe].push(this.faces[i].faceId);
+                }
             }
         }
     }
@@ -273,7 +309,7 @@ export default class Game {
         for (let i = 0; i < this.faces.length; i++) {
             this.faces[i].group = [];
         }
-        const faceConditions= [
+        let faceConditions0= [
             ["x", (this.RubiksSize-1)/2],
             ["x", -(this.RubiksSize-1)/2],
             ["y", (this.RubiksSize-1)/2],
@@ -281,13 +317,34 @@ export default class Game {
             ["z", (this.RubiksSize-1)/2],
             ["z", -(this.RubiksSize-1)/2],
         ];
+        let faceConditions = {};
+        for (let i = 0; i < faceConditions0.length; i++) {
+            faceConditions[i] = faceConditions0[i];
+        }
+        for (let i = 0; i < this.RubiksSize - 2; i++) {
+            faceConditions[1000 + i + 1] = ["x", (this.RubiksSize-1)/2-(i + 1)];
+        }
+
+        for (let i = 0; i < this.RubiksSize - 2; i++) {
+            faceConditions[1200 + i + 1] = ["y", (this.RubiksSize-1)/2-(i + 1)];
+        }
+
+        for (let i = 0; i < this.RubiksSize - 2; i++) {
+            faceConditions[1400 + i + 1] = ["z", (this.RubiksSize-1)/2-(i + 1)];
+        }
+
+        console.log(faceConditions);
+
         for (let i = 0; i < this.cubes.length; i++) {
             let cubePos = this.cubes[i].ThreeCube.position;
             this.cubes[i].resetParents();
-            for (let j = 0; j < 6; j++) {
+            for (let j0 = 0; j0 < this.faces.length; j0++) {
+                let j = this.faces[j0].faceId;
                 if (cubePos[faceConditions[j][0]] === faceConditions[j][1]) {
-                    this.cubes[i].parents[faceConditions[j][0]] = j;
-                    this.faces[j].addToGroup(this.cubes[i]);
+                    if (!this.cubes[i].parents[faceConditions[j][0]].includes(j)) {
+                        this.cubes[i].parents[faceConditions[j][0]].push(j);
+                    }
+                    this.faces[j0].addToGroup(this.cubes[i]);
                 }
             }
         }
@@ -362,11 +419,20 @@ export default class Game {
                                 console.log(game.#isMouseDown.faceUUID, newUuid);
                                 let cube1 = game.cubes.find((c) => c.uuid === game.#isMouseDown.faceUUID);
                                 let cube2 = game.cubes.find((c) => c.uuid === newUuid);
-                                let thisFace = cube2.getParentOfTransparent(intersects[0].object.uuid);
+                                if (cube1.type === "F1" || cube2.type === "F1") {
+                                    mouseup();
+                                    return;
+                                }
+                                let thisFace = cube2.getParentOfTransparent(intersects[0].object.uuid)[0];
                                 console.log("thisFace", thisFace);
-                                let intersection = Object.values(cube1.parents).filter(x => Object.values(cube2.parents).includes(x));
+                                //let intersection = Object.values(cube1.parents).filter(x => x.filter(x2 => Object.values(cube2.parents).includes(x2)).length!==0);
+                                let intersection = Object.values(cube1.parents).filter(x => {
+                                    if (x.length===0) return false;
+                                    return x.filter(x2 => Object.values(cube2.parents).flat().includes(x2)).length !== 0;
+                                }).flat();
                                 console.log("intersection", intersection, cube1.parents, cube2.parents);
                                 let faceToTurn = intersection.filter((i) => i!==thisFace)[0];
+                                console.log({...game.findFace(faceToTurn)});
                                 let faceUuids = game.findFace(faceToTurn).group.map((c) => c.uuid);
                                 let index1 = faceUuids.indexOf(cube1.uuid);
                                 let index2 = faceUuids.indexOf(cube2.uuid);
@@ -432,6 +498,7 @@ export default class Game {
 
     /** @var Face */
     findFace(faceId) {
+        if (typeof faceId === 'string') faceId = parseInt(faceId);
         for (let i = 0; i < this.faces.length; i++) {
             if (this.faces[i].faceId===faceId) return this.faces[i];
         }
@@ -451,8 +518,8 @@ export default class Game {
                 this.tmpMoveProgress = 0;
                 this.tmpMaxMoveProgress = 0;
                 console.log("done");
-                game.faces[move.faceId].correctCubesPositions();
-                game.faces[move.faceId].correctCubesColorsAxis();
+                game.findFace(move.faceId).correctCubesPositions();
+                game.findFace(move.faceId).correctCubesColorsAxis();
                 this.refreshFaces();
                 this.refreshMaps();
                 this.movesHistory.push(move);
@@ -461,10 +528,10 @@ export default class Game {
             else{
                 this.tmpMoveProgress++;
                 if (this.tmpMaxMoveProgress === this.tmpMoveProgress) {
-                    game.faces[move.faceId].turn(move, Game.speeds[move.speed]*this.tmpRestProgress);
+                    game.findFace(move.faceId).turn(move, Game.speeds[move.speed]*this.tmpRestProgress);
                 }
                 else {
-                    game.faces[move.faceId].turn(move);
+                    game.findFace(move.faceId).turn(move);
                 }
             }
         }

@@ -17,9 +17,9 @@ export default class Cube {
         z: 6,
     }
     parents = {
-        x: 6,
-        y: 6,
-        z: 6,
+        x: [],
+        y: [],
+        z: [],
     }
     transparentIds = {
         x: [],
@@ -29,9 +29,9 @@ export default class Cube {
 
     resetParents() {
         this.parents = {
-            x: 6,
-            y: 6,
-            z: 6,
+            x: [],
+            y: [],
+            z: [],
         }
     }
 
@@ -39,6 +39,7 @@ export default class Cube {
         let values = Object.values(this.transparentIds);
         let keys = Object.keys(this.transparentIds);
         let index = values.findIndex((v) => v.includes(uuid));
+        console.log(this.parents);
         return this.parents[keys[index]];
     }
 

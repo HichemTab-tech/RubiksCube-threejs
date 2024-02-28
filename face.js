@@ -58,7 +58,19 @@ export default class Face {
     reorderCubes() {
         let cubes = this._group;
         let coefs;
-        switch (this.faceId) {
+        let fakeFaceId = this.faceId;
+        if (this.faceId > 5) {
+            if (this.faceId.toString().startsWith("100")) {
+                fakeFaceId = 0;
+            }
+            else if (this.faceId.toString().startsWith("120")) {
+                fakeFaceId = 2;
+            }
+            else if (this.faceId.toString().startsWith("140")) {
+                fakeFaceId = 4;
+            }
+        }
+        switch (fakeFaceId) {
             case 0:
                 coefs = [0, 1, -1];
                 break;
