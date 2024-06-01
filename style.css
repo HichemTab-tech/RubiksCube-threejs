@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'MyFont';
-    src: url('/assets/fonts/SamuraiBlast-YznGj.ttf'); /* Update with the path to your font file */
+    src: url('./assets/fonts/SamuraiBlast-YznGj.ttf'); /* Update with the path to your font file */
 }
 
 body {
