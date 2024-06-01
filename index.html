@@ -8,20 +8,33 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<div class="buttons">
-    <button id="reset_camera" class="btn btn-primary">Reset Camera</button>
-    <button id="stop" class="btn btn-danger d-none">Stop</button>
-    <button id="start" class="btn btn-success">Start</button>
-    <button id="stop1" class="btn btn-danger d-none">Stop 1</button>
-    <button id="start1" class="btn btn-success">Start 1</button>
-    <button id="reset1" class="btn btn-primary">Reset 1</button>
-    <button id="shuffle" class="btn btn-warning">Shuffle</button>
-    <button id="solve-backward" class="btn btn-dark">Solve backward</button>
-</div>
-<div class="buttons2" id="commands-container">
+    <div class="buttons">
+        <button id="reset_camera" class="btn btn-primary">Reset Camera</button>
+        <br>
+        <button id="stop" class="btn btn-danger d-none">Stop Animation 1</button>
+        <button id="start" class="btn btn-success">Start Animation 1</button>
+        <button id="stop1" class="btn btn-danger d-none">Stop Animation 2</button>
+        <button id="start1" class="btn btn-success">Start Animation 2</button>
+        <button id="reset1" class="btn btn-primary">Reset Animation 2</button>
+        <br>
+        <button id="shuffle" class="btn btn-warning">Shuffle</button>
+        <button id="solve-backward" class="btn btn-dark">Solve</button>
+    </div>
+    <div class="buttons2" id="commands-container"></div>
+    <div class="map-parent grid-container"></div>
 
-</div>
-<div class="map-parent grid-container"></div>
+    <div class="dark-wrapper" id="loading-wrapper" style="display: none">
+        <div class="loading-wrapper">
+            <svg viewBox="0 0 60 60" stroke="#6D7582" stroke-linejoin="round">
+                <g id="loading-cube" fill="#fff">
+                    <path id="base" d=""/>
+                    <path id="lid" d=""/>
+                </g>
+            </svg>
+            <h3>Solving...</h3>
+        </div>
+    </div>
+
     <script type="module" src="./main.js"></script>
     <script src="./node_modules/jquery/dist/jquery.min.js"></script>
     <script src="./node_modules/bootstrap/dist/js/bootstrap.min.js"></script>

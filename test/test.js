@@ -1,4 +1,4 @@
-import FakeCube from "./fakeCube";
+import FakeCube from "../fakeCube";
 import {initialMoves} from './t';
 
 const size = 3;

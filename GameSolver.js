@@ -18,10 +18,6 @@ export default class GameSolver {
                 this.solver = new Solver3X(this.game);
                 break;
         }
-    }
-
-    start() {
-
         /** @type GameListener */
         let gameListener = {
             OnSolvingStart: () => {
@@ -32,7 +28,6 @@ export default class GameSolver {
             },
             OnSolvingSuccess: (moves) => {
                 console.log('Solving success', moves);
-                this.game.move(moves, 2);
             },
             OnSolvingFailed: () => {
                 console.log('Solving fail');
@@ -42,6 +37,9 @@ export default class GameSolver {
             return;
         }
         this.solver.gameListener = gameListener;
+    }
+
+    start() {
         this.solver.solve();
     }
 }

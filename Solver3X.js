@@ -1,6 +1,6 @@
 import BaseSolver from "./BaseSolver";
 import {copyList} from "./utils";
-import FakeCube from "./test/fakeCube";
+import FakeCube from "./fakeCube";
 
 export default class Solver3X extends BaseSolver {
     #cubeSize = 3;
@@ -200,13 +200,16 @@ export default class Solver3X extends BaseSolver {
 
     solve() {
          super.solve();
-         this.#solveEdgeOfFirstFace();
-         this.#solveDiagonalsOfFirstFace();
-         this.#solveEdgeOfSecondRow();
-         this.#solveEdgeOfLastFace();
-         this.#solveDiagonalsPositionOfLastFace();
-         this.#optimizeMoves();
-         this.baseGameListener.OnSolvingSuccess(this.moves);
+        this.baseGameListener.OnSolvingStart();
+         setTimeout(() => {
+             this.#solveEdgeOfFirstFace();
+             this.#solveDiagonalsOfFirstFace();
+             this.#solveEdgeOfSecondRow();
+             this.#solveEdgeOfLastFace();
+             this.#solveDiagonalsPositionOfLastFace();
+             this.#optimizeMoves();
+             this.baseGameListener.OnSolvingSuccess(this.moves);
+         }, this.solverOptions.delayToStart);
     }
 
     #solveEdgeOfFirstFace() {
@@ -217,7 +220,6 @@ export default class Solver3X extends BaseSolver {
         while (!this.#checkCubesInRightPlace(edgesCubes)) {
             //console.log(edgesCubes);
             let cube = this.#getFirstCubeNotRight(edgesCubes);
-            console.warn("cube", cube);
             let cubeFace = cube.getFace(firstFaceId);
             if (cycle.includes(cubeFace.parentFaceId)) {
                 if (!cube.faces.every(face => cycle.includes(face.parentFaceId))) {
@@ -507,14 +509,11 @@ export default class Solver3X extends BaseSolver {
             let inRightFaceNumber = inRightFace.length;
             if (inRightFaceNumber === 0) {
                 this.#createFixLastFaceEdgeAvailability(cycle[0]);
-                continue;
             }
             else if (inRightFaceNumber === 2) {
                 if (Math.abs(Solver3X.#edges.indexOf(inRightFace[0].getFace(oppositeFace).positionInFace) - Solver3X.#edges.indexOf(inRightFace[1].getFace(oppositeFace).positionInFace)) === 2) {
                     let side = this.#getSideByIndex(Solver3X.#edges[(Solver3X.#edges.indexOf(inRightFace[0].getFace(oppositeFace).positionInFace)+1)%4]);
                     this.#createFixLastFaceEdgePlaces(BaseSolver.getFaceNeighborBySide(oppositeFace, side));
-                    continue;
-                    //break;
                 }
                 else{
                     let order = (Solver3X.#edges.indexOf(inRightFace[0].getFace(oppositeFace).positionInFace)+1)%4 === Solver3X.#edges.indexOf(inRightFace[1].getFace(oppositeFace).positionInFace);
