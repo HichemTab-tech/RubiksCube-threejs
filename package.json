@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "serve": "npx vite"
+    "serve": "npx vite",
+    "build": "npx vite build"
   },
   "dependencies": {
     "bootstrap": "^5.3.2",

@@ -1,8 +1,8 @@
 import BaseSolver from "./BaseSolver";
 import {copyList} from "./utils";
-import FakeCube from "./test/fakeCube";
+import FakeCube from "./fakeCube";
 
-export default class Solver3X extends BaseSolver{
+export default class Solver3X extends BaseSolver {
     #cubeSize = 3;
     static #diagonals = [0, 6, 8, 2];
     static #edges = [1, 3, 7, 5];
@@ -200,13 +200,16 @@ export default class Solver3X extends BaseSolver{
 
     solve() {
          super.solve();
-         this.#solveEdgeOfFirstFace();
-         this.#solveDiagonalsOfFirstFace();
-         this.#solveEdgeOfSecondRow();
-         this.#solveEdgeOfLastFace();
-         this.#solveDiagonalsPositionOfLastFace();
-         this.#optimizeMoves();
-         this.gameListener.OnSolvingSuccess(this.moves);
+        this.baseGameListener.OnSolvingStart();
+         setTimeout(() => {
+             this.#solveEdgeOfFirstFace();
+             this.#solveDiagonalsOfFirstFace();
+             this.#solveEdgeOfSecondRow();
+             this.#solveEdgeOfLastFace();
+             this.#solveDiagonalsPositionOfLastFace();
+             this.#optimizeMoves();
+             this.baseGameListener.OnSolvingSuccess(this.moves);
+         }, this.solverOptions.delayToStart);
     }
 
     #solveEdgeOfFirstFace() {
@@ -215,7 +218,7 @@ export default class Solver3X extends BaseSolver{
         let cycle = BaseSolver.getCycle(firstFaceId);
         let n = 0;
         while (!this.#checkCubesInRightPlace(edgesCubes)) {
-            console.log(edgesCubes);
+            //console.log(edgesCubes);
             let cube = this.#getFirstCubeNotRight(edgesCubes);
             let cubeFace = cube.getFace(firstFaceId);
             if (cycle.includes(cubeFace.parentFaceId)) {
@@ -228,7 +231,7 @@ export default class Solver3X extends BaseSolver{
                     this.#move(nextMoves);
                     cube = this.#getCubeByColors(cube.getColors());
                 }
-                console.log(copyList(cube));
+                //console.log(copyList(cube));
                 let faceToTurn = cube.getOtherFace(firstFaceId);
                 let relation = BaseSolver.getRelation(firstFaceId, faceToTurn.parentFaceId);
                 let indexes = this.#getIndexBySide(relation[1]);
@@ -253,10 +256,10 @@ export default class Solver3X extends BaseSolver{
                 this.#cubeIsInOppositeFace(cube, firstFaceId);
             }
             else{
-                //aaaa
                 if (cubeFace.parentFaceId === cubeFace.color){
                     this.#turn2times(cube.getOtherFace(cubeFace.color).parentFaceId);
                 }
+                cube = this.#getCubeByColors(cube.getColors());
                 this.#cubeIsInOppositeFace(cube, firstFaceId);
             }
             if (n === 200) {
@@ -265,19 +268,19 @@ export default class Solver3X extends BaseSolver{
             }
             n++;
             edgesCubes = this.#getCubes(firstFaceId, true);
-            console.log("edgesCubes", edgesCubes);
+            //console.log("edgesCubes", edgesCubes);
         }
     }
 
     #solveDiagonalsOfFirstFace() {
         let firstFaceId = this.baseFirstFaceId;
         let diagonalsCubes = this.#getCubes(firstFaceId, false);
-        console.log(diagonalsCubes);
+        //console.log(diagonalsCubes);
         let oppositeFace = BaseSolver.getOppositeFace(firstFaceId);
         let cycle = BaseSolver.getCycle(firstFaceId);
         let n = 0;
         while (!this.#checkCubesInRightPlace(diagonalsCubes)) {
-            console.log(diagonalsCubes);
+            //console.log(diagonalsCubes);
             let cube = this.#getFirstCubeNotRight(diagonalsCubes);
             let cubeFace = cube.getFace(firstFaceId);
             if (cubeFace.parentFaceId === oppositeFace) {
@@ -336,6 +339,7 @@ export default class Solver3X extends BaseSolver{
             }
             else if (cubeFace.parentFaceId === firstFaceId) {
                 let face2 = cube.faces.find(face => face.color !== firstFaceId);
+                // noinspection DuplicatedCode
                 let relation = BaseSolver.getRelation(firstFaceId, face2.parentFaceId);
                 let indexes = this.#getIndexBySide(relation[1]);
                 let clockwise = !indexes.includes(Solver3X.#diagonals[(Solver3X.#diagonals.indexOf(face2.positionInFace)+1)%4]);
@@ -362,6 +366,7 @@ export default class Solver3X extends BaseSolver{
             if (cycle.includes(cubeFace.parentFaceId)) {
                 if (cube.faces.some(face => face.parentFaceId === firstFaceId)) {
                     let face2 = cube.faces.find(face => face.parentFaceId !== firstFaceId && face.color !== firstFaceId);
+                    // noinspection DuplicatedCode
                     let relation = BaseSolver.getRelation(firstFaceId, face2.parentFaceId);
                     let indexes = this.#getIndexBySide(relation[1]);
                     let clockwise = !indexes.includes(Solver3X.#diagonals[(Solver3X.#diagonals.indexOf(face2.positionInFace)+1)%4]);
@@ -399,7 +404,7 @@ export default class Solver3X extends BaseSolver{
                         cube = this.#getCubeByColors(cube.getColors());
                         cubeFace = cube.getFace(firstFaceId);
                     }
-                    console.log(cube);
+                    //console.log(cube);
                     let relation = BaseSolver.getRelation(firstFaceId, cubeFace.parentFaceId);
                     let indexes = this.#getIndexBySide(relation[1]);
                     let clockwise = !indexes.includes(Solver3X.#diagonals[(Solver3X.#diagonals.indexOf(cubeFace.positionInFace)+1)%4]);
@@ -412,7 +417,7 @@ export default class Solver3X extends BaseSolver{
                     this.#move(nextMove);
                     cube = this.#getCubeByColors(cube.getColors());
 
-                    console.log(cube, oppositeFace);
+                    //console.log(cube, oppositeFace);
                     let lastPositionInOppositeFace = cube.getFaceByParentFaceId(oppositeFace).positionInFace;
                     let clockwise2 = Solver3X.#diagonals[(Solver3X.#diagonals.indexOf(lastPositionInOppositeFace)+1)%4] === firstPositionInOppositeFace;
                     nextMove =  {
@@ -435,7 +440,7 @@ export default class Solver3X extends BaseSolver{
             }
             n++;
             diagonalsCubes = this.#getCubes(firstFaceId, false);
-            console.log("diagonalsCubes", diagonalsCubes);
+            //console.log("diagonalsCubes", diagonalsCubes);
             //break;
         }
     }
@@ -445,9 +450,9 @@ export default class Solver3X extends BaseSolver{
         let secondRowEdgeCubes = this.#getSecondRowEdges(firstFaceId);
         let oppositeFace = BaseSolver.getOppositeFace(firstFaceId);
         let n = 0;
-        console.log(this.temp);
+        //console.log(this.temp);
         while (!this.#checkCubesInRightPlace(secondRowEdgeCubes)) {
-            console.log(secondRowEdgeCubes);
+            //console.log(secondRowEdgeCubes);
             let cube = this.#getFirstCubeNotRight(secondRowEdgeCubes);
             if (!cube.faces.some((face) => face.parentFaceId === oppositeFace)) {
                 let face2 = cube.faces.find((face) => face.parentFaceId !== firstFaceId);
@@ -481,7 +486,7 @@ export default class Solver3X extends BaseSolver{
             }
             n++;
             secondRowEdgeCubes = this.#getSecondRowEdges(firstFaceId);
-            console.log("secondRowEdgeCubes", secondRowEdgeCubes);
+            //console.log("secondRowEdgeCubes", secondRowEdgeCubes);
         }
     }
 
@@ -490,7 +495,7 @@ export default class Solver3X extends BaseSolver{
         let oppositeFace = BaseSolver.getOppositeFace(firstFaceId);
         let edgesCubes = this.#getCubes(oppositeFace, true);
         let cycle = BaseSolver.getCycle(oppositeFace);
-        console.log(edgesCubes);
+        //console.log(edgesCubes);
         let n = 0;
         while (!this.#checkCubesInRightPlace(edgesCubes)) {
             n++;
@@ -499,26 +504,23 @@ export default class Solver3X extends BaseSolver{
                 break;
             }
             edgesCubes = this.#getCubes(oppositeFace, true);
-            console.log(edgesCubes);
+            //console.log(edgesCubes);
             let inRightFace = edgesCubes.filter((c) => c.getFace(oppositeFace).parentFaceId === oppositeFace);
             let inRightFaceNumber = inRightFace.length;
             if (inRightFaceNumber === 0) {
                 this.#createFixLastFaceEdgeAvailability(cycle[0]);
-                continue;
             }
             else if (inRightFaceNumber === 2) {
                 if (Math.abs(Solver3X.#edges.indexOf(inRightFace[0].getFace(oppositeFace).positionInFace) - Solver3X.#edges.indexOf(inRightFace[1].getFace(oppositeFace).positionInFace)) === 2) {
                     let side = this.#getSideByIndex(Solver3X.#edges[(Solver3X.#edges.indexOf(inRightFace[0].getFace(oppositeFace).positionInFace)+1)%4]);
                     this.#createFixLastFaceEdgePlaces(BaseSolver.getFaceNeighborBySide(oppositeFace, side));
-                    continue;
-                    //break;
                 }
                 else{
                     let order = (Solver3X.#edges.indexOf(inRightFace[0].getFace(oppositeFace).positionInFace)+1)%4 === Solver3X.#edges.indexOf(inRightFace[1].getFace(oppositeFace).positionInFace);
                     let cubeToRefer = order ? inRightFace[1] : inRightFace[0];
                     let side = this.#getSideByIndex(cubeToRefer.getFace(oppositeFace).positionInFace);
                     let faceToUseToMakeTheMove = BaseSolver.getFaceNeighborBySide(oppositeFace, side);
-                    console.log(faceToUseToMakeTheMove);
+                    //console.log(faceToUseToMakeTheMove);
                     this.#createFixLastFaceEdgeAvailability(faceToUseToMakeTheMove);
                 }
             }
@@ -552,7 +554,7 @@ export default class Solver3X extends BaseSolver{
                 }
                 break;
             }
-            console.log("lastRowEdgeCubes", edgesCubes);
+            //console.log("lastRowEdgeCubes", edgesCubes);
         }
     }
 
@@ -561,7 +563,7 @@ export default class Solver3X extends BaseSolver{
         let oppositeFace = BaseSolver.getOppositeFace(firstFaceId);
         let diagonalsCubes = this.#getCubes(oppositeFace, false);
         let cycle = BaseSolver.getCycle(oppositeFace);
-        console.log(diagonalsCubes);
+        //console.log(diagonalsCubes);
         let n = 0;
         while (!this.#checkCubesInRightPlace(diagonalsCubes)) {
             n++;
@@ -604,7 +606,7 @@ export default class Solver3X extends BaseSolver{
             let x = 0;
             while (!this.#checkCubesInRightPlace(diagonalsCubes, oppositeFace)) {
                 let cube = getTopRightCube();
-                console.log(cube, this.#checkCubesInRightPlace(cube, oppositeFace));
+                //console.log(cube, this.#checkCubesInRightPlace(cube, oppositeFace));
                 x++;
                 if (x === 100) {
                     this._baseGameListener.OnSolvingFailed();
@@ -632,8 +634,8 @@ export default class Solver3X extends BaseSolver{
             this.#turnFaceUtilOtherFaceMatch(oneEdge, oppositeFace, oneEdge.getOtherFace(oppositeFace));
 
 
-            console.log(diagonalsCubes);
-            console.log("lastRowDiagonalsCubes", diagonalsCubes);
+            //console.log(diagonalsCubes);
+            //console.log("lastRowDiagonalsCubes", diagonalsCubes);
         }
     }
 
@@ -898,7 +900,7 @@ export default class Solver3X extends BaseSolver{
     #optimizeMoves() {
         let list = copyList(this.moves);
         list = BaseSolver.optimizeMoves(list);
-        // some other optimisation specifically for 3x Size
+        // some other optimization specifically for 3x Size
         this.moves = list;
     }
 
@@ -908,19 +910,19 @@ export default class Solver3X extends BaseSolver{
     #turnFaceUtilOtherFaceMatch(cube, faceInFaceToTurn, faceToCheck = false) {
         let moves = [];
         let faceToTurn = cube.getFace(faceInFaceToTurn);
-        console.log(cube, faceInFaceToTurn, faceToCheck);
+        //console.log(cube, faceInFaceToTurn, faceToCheck);
         if (faceToCheck===false) {
             faceToCheck = cube.getOtherFace(faceInFaceToTurn);
         }
-        console.log(faceToTurn, faceToCheck)
+        //console.log(faceToTurn, faceToCheck)
         let cycle = BaseSolver.getCycle(faceToTurn.parentFaceId);
         if (faceToCheck.parentFaceId === faceToCheck.color) {
-            console.log("hichem", cube);
+            //console.log("hichem", cube);
             return [];
         }
         let currentIndex = cycle.indexOf(faceToCheck.parentFaceId);
         let targetIndex = cycle.indexOf(faceToCheck.color);
-        console.log("until", targetIndex, currentIndex, cube);
+        //console.log("until", targetIndex, currentIndex, cube);
         let diff = targetIndex - currentIndex;
         let clockwise = diff > 0;
         if (diff<0) diff*=-1

@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import {OrbitControls} from "three/addons";
 import Game from './game';
 import {areNumbersAlmostEqual} from './utils';
+import './loading-cube';
 
 import Interaction from 'three.interaction/src/interaction/Interaction.js';
 
@@ -15,7 +16,7 @@ renderer.setSize( innerWidth, innerHeight );
 renderer.setAnimationLoop( animationLoop );
 document.body.appendChild( renderer.domElement );
 
-window.addEventListener( "resize", (event) => {
+window.addEventListener( "resize", (_event) => {
     camera.aspect = innerWidth/innerHeight;
     camera.updateProjectionMatrix( );
     renderer.setSize( innerWidth, innerHeight );
@@ -38,6 +39,25 @@ const controls = new OrbitControls( camera, renderer.domElement );
 
 
 let game = new Game(renderer, scene, camera, $(".map-parent"), controls);
+game.setListener({
+    OnSolvingSuccess: (moves) => {
+        console.log('Solving success', moves);
+    },
+    OnSolvingFailed: () => {
+        console.log('Solving fail');
+    },
+    OnSolvingStart: () => {
+        console.log('Start solving');
+        loadingWrapper.show();
+    },
+    OnSolvingEnd: () => {
+        console.log('End solving');
+        loadingWrapper.hide();
+    }
+});
+game.gameSolver.solver.setSolverOptions({
+    delayToStart: 3000
+});
 console.log(game);
 
 let RubiksCube = game.RubiksCube;
@@ -59,15 +79,22 @@ let maxDis = 0.8;
 let animations = 0;
 let stop = [true, true];
 
+//elements:
+const stopBtn = $("#stop");
+const startBtn = $("#start");
+const stopBtn1 = $("#stop1");
+const startBtn1 = $("#start1");
+const loadingWrapper = $("#loading-wrapper");
+
 function stopAnimation() {
     stop[0] = true;
-    $("#start").removeClass('d-none');
-    $("#stop").addClass('d-none');
+    startBtn.removeClass('d-none');
+    stopBtn.addClass('d-none');
 }
 
 function startAnimation() {
-    $("#stop").removeClass('d-none');
-    $("#start").addClass('d-none');
+    stopBtn.removeClass('d-none');
+    startBtn.addClass('d-none');
     coef=-1;
     animations = 0;
     for (let i = 0; i < RubiksCube.children.length; i++) {
@@ -79,13 +106,13 @@ function startAnimation() {
 
 function stopAnimation1() {
     stop[1] = true;
-    $("#start1").removeClass('d-none');
-    $("#stop1").addClass('d-none');
+    startBtn1.removeClass('d-none');
+    stopBtn1.addClass('d-none');
 }
 
 function startAnimation1() {
-    $("#stop1").removeClass('d-none');
-    $("#start1").addClass('d-none');
+    stopBtn1.removeClass('d-none');
+    startBtn1.addClass('d-none');
     stop[1] = false;
 }
 
@@ -154,19 +181,19 @@ $("#reset_camera").click(function () {
     camera.position.y=4
 });
 
-$("#stop").click(function () {
+stopBtn.click(function () {
     animations=maxAnimations;
 });
 
-$("#start").click(function () {
+startBtn.click(function () {
     startAnimation();
 });
 
-$("#stop1").click(function () {
+stopBtn1.click(function () {
     stopAnimation1()
 });
 
-$("#start1").click(function () {
+startBtn1.click(function () {
     startAnimation1();
 });
 
@@ -180,7 +207,6 @@ $("#shuffle").click(function () {
 });
 
 $("#solve-backward").click(function () {
-    //game.solveBackward();
     game.gameSolver.start();
 });
 

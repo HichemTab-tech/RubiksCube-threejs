@@ -15,6 +15,11 @@ import {copyList} from "./utils";
  * OnSolvingFailed: (errors: any[]|false = false) => void,
  * }} BaseGameListener
  */
+/**
+ * @typedef {{
+ * delayToStart: int,
+ * }} SolverOptions
+ */
 export default class BaseSolver {
     /** @type Move[] */
     moves;
@@ -25,6 +30,14 @@ export default class BaseSolver {
     /** @type BaseGameListener */
     _baseGameListener;
     game;
+
+    /** @type SolverOptions */
+    #defaultSolverOptions = {
+        delayToStart: 0,
+    }
+
+    /** @type SolverOptions */
+    solverOptions = {};
 
 
 
@@ -37,19 +50,30 @@ export default class BaseSolver {
             OnSolvingFailed: (_errors) => {},
         };
         this._baseGameListener = {
-            OnSolvingStart: () => this._gameListener.OnSolvingStart(),
+            OnSolvingStart: () => this.gameListener.OnSolvingStart(),
             OnSolvingSuccess: (_solution) => {
-                this._gameListener.OnSolvingSuccess(_solution);
-                this._gameListener.OnSolvingEnd();
+                this.gameListener.OnSolvingSuccess(_solution);
+                this.gameListener.OnSolvingEnd();
+                this.game.move(_solution, 2);
             },
             OnSolvingFailed: (_errors) => {
-                this._gameListener.OnSolvingFailed(_errors);
-                this._gameListener.OnSolvingEnd();
+                this.gameListener.OnSolvingFailed(_errors);
+                this.gameListener.OnSolvingEnd();
                 throw "Error";
             },
         };
+        this.solverOptions = {...this.#defaultSolverOptions};
     }
 
+    /**
+     *
+     * @param {SolverOptions} solverOptions
+     */
+    setSolverOptions(solverOptions) {
+        this.solverOptions = {...this.#defaultSolverOptions, ...solverOptions};
+    }
+
+    // noinspection JSUnusedGlobalSymbols
     get baseGameListener() {
         return this._baseGameListener;
     }

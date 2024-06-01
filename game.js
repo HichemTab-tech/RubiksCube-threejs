@@ -77,13 +77,23 @@ export default class Game {
         // noinspection JSCheckFunctionSignatures
         this.raycaster = new THREE.Raycaster();
         this.start = -1*(this.RubiksSize-1)/2;
+        this.initMaps();
         this.createCubes();
         this.makeFaces();
+        this.refreshFacesByMaps();
         this.createPivotPoints();
-        this.refreshMaps();
+        //this.refreshMaps();
         this.createCommandsButtons();
         this.createMouseEvents();
         this.gameSolver = new GameSolver(this);
+    }
+
+    /**
+     *
+     * @param {GameListener} listener
+     */
+    setListener(listener) {
+        this.gameSolver.solver.gameListener = listener
     }
 
     createCubes() {
@@ -333,7 +343,7 @@ export default class Game {
             faceConditions[1400 + i + 1] = ["z", (this.RubiksSize-1)/2-(i + 1)];
         }
 
-        console.log(faceConditions);
+        //console.log(faceConditions);
 
         for (let i = 0; i < this.cubes.length; i++) {
             let cubePos = this.cubes[i].ThreeCube.position;
@@ -361,6 +371,95 @@ export default class Game {
                 this.map.domMaps[i][j] = face.group[j].colors[face.axe];
             }
         }
+        this.map.fillMapsDom();
+        this.map.maps = this.map.domMaps;
+    }
+
+    refreshFacesByMaps() {
+        //console.log([...this.map.maps]);
+        for (let i = 0; i < 6; i++) {
+            /** @var Face */
+            let face = this.findFace(i);
+            for (let j = 0; j < Math.pow(this.RubiksSize, 2); j++) {
+                face._group[j].replaceOneColorToCube(this.map.maps[i][j], i);
+            }
+        }
+    }
+
+    initMaps() {
+        for (let i = 0; i < 6; i++) {
+            for (let j = 0; j < Math.pow(this.RubiksSize, 2); j++) {
+                this.map.domMaps[i][j] = i;
+            }
+        }
+        /*this.map.domMaps = [
+            [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                5,
+                5,
+                5,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2
+            ],
+            [
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                4,
+                4,
+                4
+            ],
+            [
+                4,
+                4,
+                2,
+                4,
+                4,
+                2,
+                4,
+                4,
+                2
+            ],
+            [
+                3,
+                5,
+                5,
+                3,
+                5,
+                5,
+                3,
+                5,
+                5
+            ]
+        ];*/
         this.map.fillMapsDom();
         this.map.maps = this.map.domMaps;
     }
@@ -394,29 +493,29 @@ export default class Game {
 
     createMouseEvents() {
         let game = this;
-        let mousedown = (ev) => {
-            console.log(ev);
+        let mousedown = (_ev) => {
+            //console.log(_ev);
             game.#isMouseDown = {
                 faceUUID: null,
                 faceToMove: -1
             };
             game.controls.enabled = false;
         };
-        let mousemove = (ev) => {
+        let mousemove = (_ev) => {
             if (game.#isMouseDown !== false) {
-                //console.log(ev);
+                //console.log(_ev);
                 // Check for intersections with the cube
-                const intersects = ev.intersects;
+                const intersects = _ev.intersects;
                 //console.log([...intersects]);
                 if (game.#isMouseDown.faceToMove === -1) {
                     if (intersects.length > 0) {
                         let newUuid = intersects[0].object.parent.uuid;
                         if (game.#isMouseDown.faceUUID === null) {
-                            console.log(newUuid);
+                            //console.log(newUuid);
                             game.#isMouseDown.faceUUID = newUuid;
                         } else {
                             if (game.#isMouseDown.faceUUID !== newUuid) {
-                                console.log(game.#isMouseDown.faceUUID, newUuid);
+                                //console.log(game.#isMouseDown.faceUUID, newUuid);
                                 let cube1 = game.cubes.find((c) => c.uuid === game.#isMouseDown.faceUUID);
                                 let cube2 = game.cubes.find((c) => c.uuid === newUuid);
                                 if (cube1.type === "F1" || cube2.type === "F1") {
@@ -424,20 +523,20 @@ export default class Game {
                                     return;
                                 }
                                 let thisFace = cube2.getParentOfTransparent(intersects[0].object.uuid)[0];
-                                console.log("thisFace", thisFace);
+                                //console.log("thisFace", thisFace);
                                 //let intersection = Object.values(cube1.parents).filter(x => x.filter(x2 => Object.values(cube2.parents).includes(x2)).length!==0);
                                 let intersection = Object.values(cube1.parents).filter(x => {
                                     if (x.length===0) return false;
                                     return x.filter(x2 => Object.values(cube2.parents).flat().includes(x2)).length !== 0;
                                 }).flat();
-                                console.log("intersection", intersection, cube1.parents, cube2.parents);
+                                //console.log("intersection", intersection, cube1.parents, cube2.parents);
                                 let faceToTurn = intersection.filter((i) => i!==thisFace)[0];
-                                console.log({...game.findFace(faceToTurn)});
+                                //console.log({...game.findFace(faceToTurn)});
                                 let faceUuids = game.findFace(faceToTurn).group.map((c) => c.uuid);
                                 let index1 = faceUuids.indexOf(cube1.uuid);
                                 let index2 = faceUuids.indexOf(cube2.uuid);
                                 game.#isMouseDown.faceToMove = faceToTurn;
-                                console.log("faceToTurn", faceToTurn, index1, index2);
+                                //console.log("faceToTurn", faceToTurn, index1, index2);
                                 mouseup();
                                 let clockwise = this.bigCycle[this.bigCycle.indexOf(index1)+1%this.bigCycle.length] === index2;
                                 game.move(faceToTurn, clockwise);
@@ -490,7 +589,7 @@ export default class Game {
         if (number !== -1) {
             context.font = "400px MyFont"; // Increased font size
             context.fillStyle = '#050505'; // Changed text color to white for visibility
-            context.fillText(number.toString(), 136, 400); // Adjusted coordinates to center of canvas
+            context.fillText(number.toString(), 136, 400); // Adjusted coordinates to a center of canvas
         }
 
         return canvas;
@@ -517,7 +616,7 @@ export default class Game {
             if (this.tmpMaxMoveProgress === this.tmpMoveProgress) {
                 this.tmpMoveProgress = 0;
                 this.tmpMaxMoveProgress = 0;
-                console.log("done");
+                //console.log("done");
                 game.findFace(move.faceId).correctCubesPositions();
                 game.findFace(move.faceId).correctCubesColorsAxis();
                 this.refreshFaces();
