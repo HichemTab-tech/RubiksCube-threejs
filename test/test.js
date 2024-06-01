@@ -1,3 +1,5 @@
+// noinspection JSUnusedAssignment
+
 import FakeCube from "../fakeCube";
 import {initialMoves} from './t';
 
@@ -571,7 +573,7 @@ function getCubes(mapsList_, color, isEdge) {
     let cubes = [];
     if (isEdge) {
         for (let i = 0; i < edges.length; i++) {
-            let cube = getCube(mapsList_, color, edges[i], false, isEdge);
+            let cube = getCube(mapsList_, color, edges[i], false);
             if (cube !== null) {
                 if (Array.isArray(cube)) cubes.push(...cube);
                 else cubes.push(cube);
@@ -580,7 +582,7 @@ function getCubes(mapsList_, color, isEdge) {
     }
     else{
         for (let i = 0; i < diagonals.length; i++) {
-            let cube = getCube(mapsList_, color, diagonals[i], false, isEdge);
+            let cube = getCube(mapsList_, color, diagonals[i], false);
             if (cube !== null) {
                 if (Array.isArray(cube)) cubes.push(...cube);
                 else cubes.push(cube);
@@ -590,7 +592,7 @@ function getCubes(mapsList_, color, isEdge) {
     return cubes;
 }
 
-function getCube(mapsList_, color, positionInFace, colorIsParentFace = false, isEdge = false) {
+function getCube(mapsList_, color, positionInFace, colorIsParentFace = false) {
     let mapsList = copyList(mapsList_);
     let parentFaceId = -1;
     if (colorIsParentFace) {
@@ -703,7 +705,7 @@ function solveEdgeOfFirstFace(temp) {
     let firstFaceId = baseFirstFaceId;
     let edgesCubes = getCubes(temp, firstFaceId, true);
     let cycle = getCycle(firstFaceId);
-    //let n = 0;
+    let n = 0;
     while (!checkCubesInRightPlace(edgesCubes)) {
         console.log(edgesCubes);
         let cube = getFirstCubeNotRight(edgesCubes);
@@ -753,8 +755,8 @@ function solveEdgeOfFirstFace(temp) {
             cube = getCubeByColors(temp, cube.getColors());
             [temp, moves] = cubeIsInOppositeFace(cube, firstFaceId, moves, temp);
         }
-        //if (n === 3) break;
-        //n++;
+        if (n === 20) break;
+        n++;
         edgesCubes = getCubes(temp, firstFaceId, true);
         console.log("edgesCubes", edgesCubes);
     }
@@ -988,8 +990,8 @@ function solveEdgeOfSecondRow(temp) {
             temp = move(temp, nextMoves);
             cube = getCubeByColors(temp, cube.getColors());
         }
-        //if (n === 20) break;
-        //n++;
+        if (n === 20) break;
+        n++;
         secondRowEdgeCubes = getSecondRowEdges(firstFaceId, temp);
         console.log("secondRowEdgeCubes", secondRowEdgeCubes);
     }
@@ -1000,8 +1002,7 @@ function solveEdgeOfSecondRow(temp) {
 
 function solveEdgeOfLastFace(temp) {
     let moves = [];
-    let firstFaceId = baseFirstFaceId;
-    let oppositeFace = getOppositeFace(firstFaceId);
+    let oppositeFace = getOppositeFace(baseFirstFaceId);
     let edgesCubes = getCubes(temp, oppositeFace, true);
     let cycle = getCycle(oppositeFace);
     console.log(edgesCubes);
@@ -1067,11 +1068,10 @@ function solveEdgeOfLastFace(temp) {
                 }
             }
             rightPlaces = edgesCubes.filter((c) => c.faces.every((f) => f.color === f.parentFaceId));
-            //let x = 0;
+            let x = 0;
             while (!checkCubesInRightPlace(edgesCubes)) {
-                /*x++;
+                x++;
                 if (x > 10) throw "err";
-                console.log("hhhhhhhhhhh", edgesCubes, rightPlaces);*/
                 [temp, nextMoves] = createFixLastFaceEdgePlaces(temp, cube.getOtherFace(oppositeFace).parentFaceId);
                 moves.push(...nextMoves);
                 edgesCubes = getCubes(temp, oppositeFace, true);
@@ -1150,7 +1150,7 @@ function solveDiagonalsPositionOfLastFace(temp) {
             diagonalsCubes = getCubes(temp, oppositeFace, false);
         }
 
-        let oneEdge = getCube(temp, oppositeFace, edges[0], true, true);
+        let oneEdge = getCube(temp, oppositeFace, edges[0], true);
         let nextMoves = turnFaceUtilOtherFaceMatch(oneEdge, oppositeFace, oneEdge.getOtherFace(oppositeFace));
         if (nextMoves.length !== 0) {
             moves.push(...nextMoves);
@@ -1167,8 +1167,7 @@ function solveDiagonalsPositionOfLastFace(temp) {
 
 function createFixLastFaceEdgeAvailability(temp, faceId) {
     let moves = [];
-    let firstFaceId = baseFirstFaceId;
-    let oppositeFace = getOppositeFace(firstFaceId);
+    let oppositeFace = getOppositeFace(baseFirstFaceId);
     let cycle = getCycle(oppositeFace);
 
     let oneFace = cycle[(cycle.indexOf(faceId)+1)%4];
@@ -1246,8 +1245,7 @@ function createFixLastFaceEdgeAvailability(temp, faceId) {
 
 function createFixLastFaceEdgePlaces(temp, faceId) {
     let moves = [];
-    let firstFaceId = baseFirstFaceId;
-    let oppositeFace = getOppositeFace(firstFaceId);
+    let oppositeFace = getOppositeFace(baseFirstFaceId);
 
     let relation = getRelation(oppositeFace, faceId);
     let side = relation[1];
