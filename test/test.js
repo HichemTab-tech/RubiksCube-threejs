@@ -2,7 +2,7 @@ import FakeCube from "./fakeCube";
 import {initialMoves} from './t';
 
 const size = 3;
-const baseFirstFaceId = 0;
+const baseFirstFaceId = 3;
 const numbers = [2,4,0,5,1,3];
 let maps = numbers.map(() => []);
 const tracked = ["2F-03", "2F-14"];
@@ -11,6 +11,11 @@ function createMap() {
     mapParentHtmlElement.innerHTML = "";
     for (let i = 0; i < 6; i++) {
         let divMap = $('<div>').addClass('map').attr('data-map', numbers[i]);
+        let str = Array(size).fill('auto').join(" ");
+        divMap.css({
+            'grid-template-rows': str,
+            'grid-template-columns': str
+        });
         for (let j = 0; j < Math.pow(size, 2); j+=size) {
             for (let k = 0; k < size; k++) {
                 let divTexture = $('<div>').addClass('one-2d-texture').attr('data-order', size*2-j+k);
@@ -745,6 +750,7 @@ function solveEdgeOfFirstFace(temp) {
                 moves.push(...nextMoves);
                 temp = move(temp, nextMoves);
             }
+            cube = getCubeByColors(temp, cube.getColors());
             [temp, moves] = cubeIsInOppositeFace(cube, firstFaceId, moves, temp);
         }
         //if (n === 3) break;
